@@ -2,6 +2,8 @@ from api.models import User
 from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 
+from api.selectors import get_token
+
 def user_create(*, email: str, password: str, first_name: str, last_name: str) -> User:
     try:
         User.objects.get(email=email)
@@ -11,10 +13,6 @@ def user_create(*, email: str, password: str, first_name: str, last_name: str) -
         user.save()
         Token.objects.create(user=user)
         return user
-    
-
-def get_token(*, user: User) -> str:
-    return Token.objects.get(user=user).key
 
 def user_login(*, email: str, password: str) -> User:
     user = None
