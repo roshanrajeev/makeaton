@@ -33,3 +33,4 @@ class UserLoginApi(ApiErrorsMixin, APIView):
         
         token = user_login(**serializer.validated_data)
         return Response(data={"token": token}, status=status.HTTP_200_OK)
+
