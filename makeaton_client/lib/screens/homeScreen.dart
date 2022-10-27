@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         fit: StackFit.expand,
         children: <Widget>[
           _cameraPreviewWidget(),
-          // Align(alignment: Alignment.topCenter, child: _pushButtonsRowWidget()),
+          Align(alignment: Alignment.topCenter, child: _pushButtonsRowWidget()),
           Align(
               alignment: Alignment.bottomCenter,
               child: _captureControlRowWidget()),
@@ -90,7 +90,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  // widget
+  Widget _pushButtonsRowWidget() {
+    return Container();
+  }
 
   Widget _captureControlRowWidget() {
     final CameraController? cameraController = controller;
