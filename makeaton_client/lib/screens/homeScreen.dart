@@ -2,14 +2,15 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class CameraScreen extends StatefulWidget {
+  const CameraScreen({Key? key}) : super(key: key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<CameraScreen> createState() => _CameraScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+class _CameraScreenState extends State<CameraScreen>
+    with WidgetsBindingObserver {
   CameraController? controller;
   XFile? imageFile;
 
@@ -100,41 +101,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget _pushButtonsRowWidget() {
     return Row(
       children: [
-        Text(
-          '  App NAME',
-          style: TextStyle(color: Colors.white, fontSize: 25),
-        ),
+        // Text(
+        //   '  App NAME',
+        //   style: TextStyle(color: Colors.white, fontSize: 25),
+        // ),
         Spacer(),
         InkWell(
           onTap: () {},
-          child: Container(
-            height: 45,
-            width: 45,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(width: 2, color: Colors.white)),
-            child: Icon(
-              Icons.south_america_outlined,
-              color: Colors.white,
-            ),
-          ),
+          child: SizedBox(
+              height: 30,
+              width: 30,
+              child: Image.asset('assets/community.png')),
         ),
         SizedBox(
           width: 20,
         ),
         InkWell(
           onTap: () {},
-          child: Container(
-            height: 45,
-            width: 45,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(width: 2, color: Colors.white)),
-            child: Icon(
-              Icons.shopping_cart,
-              color: Colors.white,
-            ),
-          ),
+          child: SizedBox(
+              height: 30, width: 30, child: Image.asset('assets/shop.png')),
         ),
         SizedBox(
           width: 20,

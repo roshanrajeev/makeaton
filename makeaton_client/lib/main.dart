@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:makeaton_client/screens/homeScreen.dart';
 
+import 'screens/community.dart';
+
 void main() {
   runApp(const MyApp());
 }
