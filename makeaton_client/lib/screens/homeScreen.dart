@@ -61,7 +61,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         fit: StackFit.expand,
         children: <Widget>[
           _cameraPreviewWidget(),
-          Align(alignment: Alignment.topCenter, child: _pushButtonsRowWidget()),
+          SafeArea(
+            child: Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  height: 70,
+                  child: _pushButtonsRowWidget(),
+                )),
+          ),
           Align(
               alignment: Alignment.bottomCenter,
               child: _captureControlRowWidget()),
@@ -91,7 +98,49 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Widget _pushButtonsRowWidget() {
-    return Container();
+    return Row(
+      children: [
+        Text(
+          '  App NAME',
+          style: TextStyle(color: Colors.white, fontSize: 25),
+        ),
+        Spacer(),
+        InkWell(
+          onTap: () {},
+          child: Container(
+            height: 45,
+            width: 45,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(width: 2, color: Colors.white)),
+            child: Icon(
+              Icons.south_america_outlined,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 20,
+        ),
+        InkWell(
+          onTap: () {},
+          child: Container(
+            height: 45,
+            width: 45,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(width: 2, color: Colors.white)),
+            child: Icon(
+              Icons.shopping_cart,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 20,
+        ),
+      ],
+    );
   }
 
   Widget _captureControlRowWidget() {
@@ -103,16 +152,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         height: 80,
         child: Center(
           child: InkWell(
-            onTap:
-                cameraController != null && cameraController.value.isInitialized
-                    ? onTakePictureButtonPressed
-                    : null,
-            child: Container(
-              height: 70,
-              decoration: const BoxDecoration(
-                  shape: BoxShape.circle, color: Colors.white),
-            ),
-          ),
+              onTap: cameraController != null &&
+                      cameraController.value.isInitialized
+                  ? onTakePictureButtonPressed
+                  : null,
+              child: Container(
+                height: 70,
+                decoration: const BoxDecoration(
+                    shape: BoxShape.circle, color: Colors.white),
+                child: Container(
+                    margin: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: Colors.grey[850]!, width: 2))),
+              )),
         ),
       ),
     );
