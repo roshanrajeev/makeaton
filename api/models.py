@@ -73,10 +73,10 @@ class Post(models.Model):
     image = models.TextField(blank=True, null=True)
     text = models.CharField(max_length=200, blank=True, null=True)
     likes_count = models.IntegerField(default=0)
-    likes_users = models.ManyToManyField(User, related_name='liked_posts')
+    liked_users = models.ManyToManyField(User, related_name='liked_posts')
     comment_count = models.IntegerField(default=0)
     posted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', null=False, blank=False)
-    related_challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='posts')
+    related_challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
 
 
 class Comment(models.Model):

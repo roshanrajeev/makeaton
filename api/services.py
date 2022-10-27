@@ -1,4 +1,4 @@
-from api.models import Challenge, User
+from api.models import Challenge, Post, User
 from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 
@@ -92,3 +92,46 @@ def challenge_accept(*, pk: int, user: User) -> Challenge:
     challenge.accepted_count += 1
     challenge.save()
     return challenge
+
+
+def post_create(*, user: User, challenge_id: int=None, image: str=None, text: str=None) -> Post:
+    post = Post.objects.create(
+        posted_by=user,
+        text=text,
+        image=image
+    )
+    if challenge_id:
+        try:
+            challenge = Challenge.objects.get(pk=challenge_id)
+            post.related_challenge = challenge
+        except Challenge.DoesNotExist:
+            raise ValidationError("Challenge with this id does not exist")
+            
+    post.save()
+    return post
+
+
+def post_delete(*, pk: int) -> Post:
+    post = None
+    try:
+        post = Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        raise ValidationError("Post with this id does not exist")
+    post.delete()
+    return post
+
+
+def post_like(*, pk: int, user: User) -> Post:
+    post = None
+    try:
+        post = Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        raise ValidationError("Post with this id does not exist")
+    
+    if post.liked_users.filter(id=user.id).exists():
+        raise ValidationError("You have already liked this post")
+
+    post.liked_users.add(user)
+    post.likes_count += 1
+    post.save()
+    return post

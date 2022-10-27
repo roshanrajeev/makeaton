@@ -5,8 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from api.errors import ApiErrorsMixin
 from api.mixins import ApiAuthMixin
-from api.services import challenge_accept, challenge_create, challenge_delete, challenge_update, user_create, user_login
-from api.selectors import challenge_detail, challenge_list
+from api.services import challenge_accept, challenge_create, challenge_delete, challenge_update, post_create, post_delete, post_like, user_create, user_login
+from api.selectors import challenge_detail, challenge_list, post_detail, post_list
 from api.models import *
 from makeaton.settings import API_KEY
 
@@ -154,4 +154,57 @@ class ChallengeDeleteApi(ApiErrorsMixin, ApiAuthMixin, APIView):
 class ChallengeAcceptApi(ApiErrorsMixin, ApiAuthMixin, APIView):
     def post(self, request, pk):
         challenge_accept(pk=pk, user=request.user)
+        return Response(status=status.HTTP_200_OK)
+
+
+
+# POSTS CRUD
+
+class PostListApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Post
+            fields = ["id", "image", "text", "likes_count"]
+
+    def get(self, request):
+        posts = post_list()
+        serializer = self.OutputSerializer(posts, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class PostDetailApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Post
+            fields = ["id", "image", "text", "likes_count"]
+
+    def get(self, request, pk):
+        post = post_detail(pk=pk)
+        serializer = self.OutputSerializer(post)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    
+class PostCreateApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class InputSerializer(serializers.Serializer):
+        image = serializers.ImageField(required=False)
+        text = serializers.CharField(required=False)
+        challenge_id = serializers.CharField(required=False)
+
+    def post(self, request):
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        post_create(user=request.user, **serializer.validated_data)
+        return Response(status=status.HTTP_201_CREATED)
+
+
+class PostDeleteApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    def delete(self, request, pk):
+        post_delete(pk=pk)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PostLikeApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    def post(self, request, pk):
+        post_like(pk=pk, user=request.user)
         return Response(status=status.HTTP_200_OK)
