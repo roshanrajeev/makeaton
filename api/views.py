@@ -1,14 +1,15 @@
+import openai
 from django.shortcuts import render
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from api.errors import ApiErrorsMixin
 from api.mixins import ApiAuthMixin
-import openai
-from api.services import user_create, user_login
-from .models import *
-# Create your views here.
+from api.services import challenge_create, challenge_delete, challenge_update, user_create, user_login
+from api.selectors import challenge_detail, challenge_list
+from api.models import *
 from makeaton.settings import API_KEY
+
 
 # print(API_KEY)
 def generate_funfact_eq(text):
@@ -58,6 +59,7 @@ def generate_alternatives(text):
     return response.choices[0].text
 
 
+# USER CRUD
 class UserCreateApi(ApiErrorsMixin, APIView):
     class InputSerializer(serializers.Serializer):
         email = serializers.EmailField()
@@ -85,150 +87,65 @@ class UserLoginApi(ApiErrorsMixin, APIView):
         token = user_login(**serializer.validated_data)
         return Response(data={"token": token}, status=status.HTTP_200_OK)
 
-class Badgeapi(ApiAuthMixin,ApiErrorsMixin, APIView):
-    '''
-    authenticate with token and serialize inputs
-    '''
+
+
+
+# CHALLENGES CRUD
+class ChallengeListApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Challenge
+            fields = ["id", "name", "description", "accepted_count", "insights", "point"]
+
+    def get(self, request):
+        challenges = challenge_list()
+        serializer = self.OutputSerializer(challenges, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class ChallengeCreateApi(ApiErrorsMixin, ApiAuthMixin, APIView):
     class InputSerializer(serializers.Serializer):
-        name = serializers.CharField()
-        description = serializers.CharField()
-        image = serializers.CharField()
-        unlock_point = serializers.IntegerField()
-    
+        name = serializers.CharField(required=True)
+        description = serializers.CharField(required=True)
+        insights = serializers.CharField(required=True)
+        point = serializers.IntegerField(required=True)
+
     def post(self, request):
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        Badges.objects.create(**serializer.validated_data)
+        challenge_create(user=request.user, **serializer.validated_data)
         return Response(status=status.HTTP_201_CREATED)
-    
-    def get(self,request,id):
-        '''
-        get badge with pk = id
-        '''
-        badge = Badges.objects.get(id=id)
-        return Response(data=badge, status=status.HTTP_200_OK)
-
-class Communityapi(ApiAuthMixin,ApiErrorsMixin, APIView):
-    '''
-    authenticate with token and serialize inputs
-    '''
 
 
-    class _InputSerializer(serializers.Serializer):
-        class _UserSerializer(serializers.ModelSerializer):
-            class Meta:
-                model = User
-                fields = ('__all__',)
-        image= serializers.CharField()
-        description= serializers.CharField()
-        liked = serializers.IntegerField()
-        likedby = _UserSerializer(many=True)
-        postedby = _UserSerializer()
-        comment_count= serializers.IntegerField()
-        commentedby = _UserSerializer(many=True)
-        
+class ChallengeDetailApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Challenge
+            fields = ["id", "name", "description", "accepted_count", "insights", "point"]
 
-    def post(self, request):
-        serializer = self._InputSerializer(data=request.data)
+    def get(self, request, pk):
+        challenge = challenge_detail(pk=pk)
+        serializer = self.OutputSerializer(challenge)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class ChallengeUpdateApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    class InputSerializer(serializers.Serializer):
+        name = serializers.CharField(required=False)
+        description = serializers.CharField(required=False)
+        insights = serializers.CharField(required=False)
+        point = serializers.IntegerField(required=False)
+
+    def put(self, request, pk):
+        serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        Community.objects.create(**serializer.validated_data)
-        return Response(status=status.HTTP_201_CREATED)
-
-    def get(self,request,id):
-        community = Community.objects.get(id=id)
-        return Response(data=community, status=status.HTTP_200_OK)
-    def delete(self,request,id):
-        community = Community.objects.get(id=id)
-        community.delete()
+        
+        challenge_update(pk=pk, user=request.user, **serializer.validated_data)
         return Response(status=status.HTTP_200_OK)
 
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+class ChallengeDeleteApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    def delete(self, request, pk):
+        challenge_delete(pk=pk)
+        return Response(status=status.HTTP_204_NO_CONTENT)

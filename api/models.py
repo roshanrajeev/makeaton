@@ -42,7 +42,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField('last name', max_length=30, blank=True)
     date_joined = models.DateTimeField('date joined', auto_now_add=True)
     is_active = models.BooleanField('active', default=True)
-    reward_points = models.PositiveIntegerField(default=0)
     
     objects = UserManager()
 
@@ -54,37 +53,40 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = 'users'
 
 class Badges(models.Model):
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=200)
-    image = models.TextField()
-    unlock_point = models.IntegerField()
-
-    
-class Community(models.Model):
-    image = models.CharField(max_length=100)
-    description = models.TextField()
-    liked = models.PositiveIntegerField(default=0)
-    likedby = models.ManyToManyField(User, related_name='likedby')
-    postedby = models.ForeignKey(User, on_delete=models.CASCADE, related_name='postedby')
-    comment_count = models.PositiveIntegerField(default=0)
-    commentedby = models.ManyToManyField(User, related_name='commentedby')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-class Challenges(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    days = models.IntegerField()
-    points = models.IntegerField()
-    challengedby = models.ForeignKey(User, on_delete=models.CASCADE, related_name='createdby')
-    created_at = models.DateTimeField(auto_now_add=True)
-    joinedby = models.ManyToManyField(User, related_name='joinedby')
-    completedby = models.ManyToManyField(User, related_name='completedby')
+    name = models.CharField(max_length=50, blank=False, null=False)
+    description = models.CharField(max_length=200, blank=False, null=False)
+    image = models.TextField(blank=False, null=False)
+    unlock_point = models.IntegerField(blank=False, null=False)
 
 
-class ChallengeDetails(models.Model):
-    challenge = models.ForeignKey(Challenges, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    user= models.ForeignKey(User, on_delete=models.CASCADE)
-    startdate = models.DateTimeField()
-    enddate = models.DateTimeField()
+class Challenge(models.Model):
+    name = models.CharField(max_length=50, blank=False, null=False)
+    description = models.CharField(max_length=200, blank=False, null=False)
+    accepted_count = models.IntegerField(default=0)
+    accepted_users = models.ManyToManyField(User, related_name='accepted_challenges')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='challenges', blank=False, null=False)
+    insights = models.CharField(max_length=200, blank=True, null=True)
+    point = models.IntegerField(default=0, blank=False, null=False)
 
+
+class Post(models.Model):
+    image = models.TextField(blank=True, null=True)
+    text = models.CharField(max_length=200, blank=True, null=True)
+    likes_count = models.IntegerField(default=0)
+    likes_users = models.ManyToManyField(User, related_name='liked_posts')
+    comment_count = models.IntegerField(default=0)
+    posted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts', null=False, blank=False)
+    related_challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='posts')
+
+
+class Comment(models.Model):
+    text = models.CharField(max_length=200, blank=False, null=False)
+    commented_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments', null=False, blank=False)
+    related_post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', null=False, blank=False)
+
+
+class Profile(models.Model):
+    image = models.TextField(blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', blank=False, null=False)
+    reward_points = models.IntegerField(default=0)
+    unlocked_badges = models.ManyToManyField(Badges, related_name='profiles')

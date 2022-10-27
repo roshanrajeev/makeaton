@@ -5,6 +5,11 @@ from api.views import *
 urlpatterns = [
     path("signup/", UserCreateApi.as_view(), name="signup"),
     path("login/", UserLoginApi.as_view(), name="login"),
-    path("badge/<int:id>", Badgeapi.as_view(), name="badge"),
 
+    # CHALLENGES CRUD
+    path("challenges/", ChallengeListApi.as_view(), name="challenge_list"),
+    path("challenges/<int:pk>/", ChallengeDetailApi.as_view(), name="challenge_detail"),
+    path("challenges/create/", ChallengeCreateApi.as_view(), name="challenge_create"),
+    path("challenges/<int:pk>/update/", ChallengeUpdateApi.as_view(), name="challenge_update"),
+    path("challenge/<int:pk>/delete/", ChallengeDeleteApi.as_view(), name="challenge_delete"),
 ]
