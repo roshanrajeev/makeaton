@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:makeaton_client/screens/challenges.dart';
-import 'package:makeaton_client/screens/community.dart';
-import 'package:makeaton_client/screens/shopScreen.dart';
+import 'challenges.dart';
+import 'community.dart';
+import 'shopScreen.dart';
 
 enum Options { challenge, community, shop }
 
