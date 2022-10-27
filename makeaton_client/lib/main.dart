@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:makeaton_client/screens/homeScreen.dart';
+import 'package:makeaton_client/screens/cameraScreen.dart';
 
-import 'screens/community.dart';
+import 'screens/homePage.dart';
 
 void main() {
   runApp(const MyApp());
