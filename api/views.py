@@ -4,10 +4,61 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from api.errors import ApiErrorsMixin
 from api.mixins import ApiAuthMixin
-
+import openai
 from api.services import user_create, user_login
 from .models import *
 # Create your views here.
+
+
+import openai
+openai.api_key = "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"
+def generate_funfact_eq(text):
+
+
+    prmt ="The carbon footprint on average left by a "+text+" is [insert] grams, That is equivalent to CO2 cleaned by [insert] trees in one night Or if it is made into a bubble, the size of the bubble will be equivalent to [insert object].\n"
+    # print(prmt)
+    response = openai.Completion.create(
+    model="text-davinci-002",
+    prompt=prmt,
+    temperature=0.7,
+    max_tokens=256,
+    top_p=1,
+    frequency_penalty=0,
+    presence_penalty=0
+)
+    return response.choices[0].text
+
+
+def generate_list_of_facts(text):
+
+
+    response = openai.Completion.create(
+    model="text-davinci-002",
+    prompt="List of unknown facts about a "+text+" based on history, carbon emission, innovation and future impact in India:\n",
+    temperature=0.7,
+    max_tokens=256,
+    top_p=1,
+    frequency_penalty=0,
+    presence_penalty=0
+)
+    return response.choices[0].text
+
+
+def generate_alternatives(text):
+
+
+    response = openai.Completion.create(
+    model="text-davinci-002",
+    prompt="List of green alternatives or improvements for a "+text+" ",
+    temperature=0.7,
+    max_tokens=256,
+    top_p=1,
+    frequency_penalty=0,
+    presence_penalty=0
+)
+    return response.choices[0].text
+
+
 class UserCreateApi(ApiErrorsMixin, APIView):
     class InputSerializer(serializers.Serializer):
         email = serializers.EmailField()
@@ -92,3 +143,93 @@ class Communityapi(ApiAuthMixin,ApiErrorsMixin, APIView):
         community = Community.objects.get(id=id)
         community.delete()
         return Response(status=status.HTTP_200_OK)
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
