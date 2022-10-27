@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from api.errors import ApiErrorsMixin
 from api.mixins import ApiAuthMixin
-from api.services import challenge_create, challenge_delete, challenge_update, user_create, user_login
+from api.services import challenge_accept, challenge_create, challenge_delete, challenge_update, user_create, user_login
 from api.selectors import challenge_detail, challenge_list
 from api.models import *
 from makeaton.settings import API_KEY
@@ -149,3 +149,9 @@ class ChallengeDeleteApi(ApiErrorsMixin, ApiAuthMixin, APIView):
     def delete(self, request, pk):
         challenge_delete(pk=pk)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ChallengeAcceptApi(ApiErrorsMixin, ApiAuthMixin, APIView):
+    def post(self, request, pk):
+        challenge_accept(pk=pk, user=request.user)
+        return Response(status=status.HTTP_200_OK)

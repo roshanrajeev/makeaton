@@ -45,6 +45,8 @@ def challenge_create(*,
         insights=insights, 
         point=point
     )
+    challenge.accepted_users.add(user)
+    challenge.accepted_count += 1
     challenge.save()
     return challenge
 
@@ -73,4 +75,20 @@ def challenge_delete(*, pk: int) -> Challenge:
     except Challenge.DoesNotExist:
         raise ValidationError("Challenge with this id does not exist")
     challenge.delete()
+    return challenge
+
+
+def challenge_accept(*, pk: int, user: User) -> Challenge:
+    challenge = None
+    try:
+        challenge = Challenge.objects.get(pk=pk)
+    except Challenge.DoesNotExist:
+        raise ValidationError("Challenge with this id does not exist")
+    
+    if challenge.accepted_users.filter(id=user.id).exists():
+        raise ValidationError("You have already accepted this challenge")
+
+    challenge.accepted_users.add(user)
+    challenge.accepted_count += 1
+    challenge.save()
     return challenge

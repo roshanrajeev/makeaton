@@ -11,5 +11,6 @@ urlpatterns = [
     path("challenges/<int:pk>/", ChallengeDetailApi.as_view(), name="challenge_detail"),
     path("challenges/create/", ChallengeCreateApi.as_view(), name="challenge_create"),
     path("challenges/<int:pk>/update/", ChallengeUpdateApi.as_view(), name="challenge_update"),
-    path("challenge/<int:pk>/delete/", ChallengeDeleteApi.as_view(), name="challenge_delete"),
+    path("challenges/<int:pk>/delete/", ChallengeDeleteApi.as_view(), name="challenge_delete"),
+    path("challenges/<int:pk>/accept/", ChallengeAcceptApi.as_view(), name="challenge_accept"),
 ]
