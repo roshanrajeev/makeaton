@@ -8,10 +8,9 @@ import openai
 from api.services import user_create, user_login
 from .models import *
 # Create your views here.
+from makeaton.settings import API_KEY
 
-
-import openai
-openai.api_key = "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"
+# print(API_KEY)
 def generate_funfact_eq(text):
 
 
