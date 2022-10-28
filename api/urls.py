@@ -20,4 +20,11 @@ urlpatterns = [
     path("posts/create/", PostCreateApi.as_view(), name="post_create"),
     path("posts/<int:pk>/delete/", PostDeleteApi.as_view(), name="post_delete"),
     path("posts/<int:pk>/like/", PostLikeApi.as_view(), name="post_like"),
+    
+    # yolo
+    path('detect/',yoloyoyo.as_view(),name='object_detection'),
+    #gpt3
+    path('insights/<str:label>/',gpt3.as_view(),name='gpt3_view'),
+
+
 ]

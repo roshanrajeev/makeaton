@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:http/http.dart';
+import 'package:makeaton_client/insightsPopup.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({Key? key}) : super(key: key);
@@ -12,7 +17,8 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver {
   CameraController? controller;
-  XFile? imageFile;
+  String? imageLabel = '', funFact = '', listFacts = '', listAlt = '';
+  bool isBottomSheetUp = false;
 
   List<CameraDescription> _cameras = <CameraDescription>[];
   void initialiseCamera() async {
@@ -128,6 +134,7 @@ class _CameraScreenState extends State<CameraScreen>
     );
   }
 
+  bool loading = false;
   Widget _captureControlRowWidget() {
     final CameraController? cameraController = controller;
 
@@ -138,8 +145,36 @@ class _CameraScreenState extends State<CameraScreen>
         child: Center(
           child: InkWell(
               onTap: cameraController != null &&
-                      cameraController.value.isInitialized
-                  ? onTakePictureButtonPressed
+                      cameraController.value.isInitialized &&
+                      !loading
+                  ? () async {
+                      setState(() {
+                        loading = true;
+                      });
+                      await onTakePictureButtonPressed();
+                      if (imageLabel == null) {
+                        setState(() {
+                          loading = false;
+                          return;
+                        });
+                      }
+                      print(funFact);
+                      print(isBottomSheetUp);
+                      List<String> facts = [], alt = [];
+                      for (String s in listFacts!.split('\n'))
+                        if (s.trim() != '') facts.add(s);
+                      for (String s in listAlt!.split('\n'))
+                        if (s.trim() != '') alt.add(s);
+                      print(facts);
+                      print(alt);
+                      setState(() {
+                        loading = false;
+                      });
+                      if (isBottomSheetUp)
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (context) => Insights(imageLabel ?? "Cat",
+                                facts: facts, alts: alt)));
+                    }
                   : null,
               child: Container(
                 height: 70,
@@ -149,28 +184,76 @@ class _CameraScreenState extends State<CameraScreen>
                     margin: EdgeInsets.all(2),
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border:
-                            Border.all(color: Colors.grey[850]!, width: 2))),
+                        border: Border.all(color: Colors.grey[850]!, width: 2)),
+                    child: loading
+                        ? Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.black,
+                            ),
+                          )
+                        : Container()),
               )),
         ),
       ),
     );
   }
 
-  void onTakePictureButtonPressed() {
-    takePicture().then((XFile? file) {
+  Future onTakePictureButtonPressed() async {
+    await takePicture().then((String? file) async {
       if (mounted) {
-        setState(() {
-          imageFile = file;
-        });
         if (file != null) {
-          print('Picture saved to ${file.path}');
+          Map m = await getInsights(file);
+          listAlt = m['list_of_alternatives'];
+          listFacts = m['list_of_facts'];
+          funFact = m['fun-facts'];
+          isBottomSheetUp = true;
+          setState(() {
+            imageLabel = file;
+          });
         }
       }
     });
   }
 
-  Future<XFile?> takePicture() async {
+  Future<Map> getInsights(String img) async {
+    try {
+      Uri uri = Uri.parse("http://10.0.2.2:8000/api/insights/$img/");
+
+      //content type application/json
+      Map<String, String> headers = {
+        "Content-type": "application/json",
+        "Authorization": "Bearer b39d8c48e78275c0b3be78547d2417f60f5581c6"
+      };
+      // make post request
+      Response response = await get(uri, headers: headers);
+      // check the status code for the result
+      int statusCode = response.statusCode;
+      print(response.body);
+      if (statusCode == 200) {
+        Map result = jsonDecode(response.body);
+        return result;
+      }
+
+      // http.post(uri, body: {
+      //   "email": "roshan4@gmail.com",
+      //   "password": "Roshan@123"
+      // }).then((response) {
+      //   print("Reponse status : ${response.statusCode}");
+      //   print("Response body : ${response.body}");
+      //   var myresponse = jsonDecode(response.body);
+      //   String token = myresponse["token"];
+      // });
+    } catch (e) {
+      print(e.toString());
+    }
+    return {
+      "fun-facts": "\n.",
+      "list_of_facts": "\n-",
+      "list_of_alternatives": "\n"
+    };
+  }
+
+  Future<String?> takePicture() async {
     final CameraController? cameraController = controller;
     if (cameraController == null || !cameraController.value.isInitialized) {
       print('Error: select a camera first.');
@@ -183,11 +266,50 @@ class _CameraScreenState extends State<CameraScreen>
 
     try {
       final XFile file = await cameraController.takePicture();
-      return file;
+      File f = File(file.path);
+      List<int> fileInByte = f.readAsBytesSync();
+      String fileInBase64 = base64Encode(fileInByte);
+      return await detectObject(fileInBase64);
     } on CameraException catch (e) {
       print(e);
       return null;
     }
+  }
+
+  Future<String> detectObject(String image) async {
+    try {
+      Uri uri = Uri.parse("http://10.0.2.2:8000/api/detect/");
+
+      //content type application/json
+      Map<String, String> headers = {
+        "Content-type": "application/json",
+        "Authorization": "Bearer b39d8c48e78275c0b3be78547d2417f60f5581c6"
+      };
+      Map body = {"image": image};
+      // make post request
+      Response response =
+          await post(uri, headers: headers, body: jsonEncode(body));
+      // check the status code for the result
+      int statusCode = response.statusCode;
+      print(response.body);
+      if (statusCode == 200) {
+        Map result = jsonDecode(response.body);
+        return result['label'] ?? "Chair";
+      }
+
+      // http.post(uri, body: {
+      //   "email": "roshan4@gmail.com",
+      //   "password": "Roshan@123"
+      // }).then((response) {
+      //   print("Reponse status : ${response.statusCode}");
+      //   print("Response body : ${response.body}");
+      //   var myresponse = jsonDecode(response.body);
+      //   String token = myresponse["token"];
+      // });
+    } catch (e) {
+      print(e.toString());
+    }
+    return image;
   }
 
   Future<void> onNewCameraSelected(CameraDescription cameraDescription) async {
